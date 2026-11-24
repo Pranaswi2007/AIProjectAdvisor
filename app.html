@@ -1,0 +1,1189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>AI Project Intelligence Dashboard</title>
+<style>
+:root{
+  --primary:#4a9eb8;
+  --primary-dark:#194350;
+  --primary-mid:#2d6478;
+  --primary-light:#1a3a47;
+  --accent:#FFEFC4;
+  --accent-dark:#e6c84a;
+  --accent-mid:#fff3d6;
+  --bg:#0d232c;
+  --sidebar-bg:#122e38;
+  --sidebar-active:#1a3a47;
+  --sidebar-hover:rgba(74,158,184,.15);
+  --card:#152e38;
+  --border:#284555;
+  --text:#e6f0f3;
+  --muted:#7a9eab;
+  --success:#2dd4a8;
+  --warn:#f5b942;
+  --danger:#f06d5f;
+  --radius:12px;
+  --shadow:0 2px 10px rgba(0,0,0,.3);
+  --shadow-lg:0 8px 30px rgba(0,0,0,.4);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;background:var(--bg);color:var(--text);display:flex;min-height:100vh}
+a{color:var(--primary);text-decoration:none}
+
+/* ── SIDEBAR ── */
+.sidebar{width:230px;background:linear-gradient(180deg,#122e38 0%,#0d232c 100%);min-height:100vh;position:fixed;left:0;top:0;display:flex;flex-direction:column;z-index:100;box-shadow:4px 0 20px rgba(0,0,0,.4);border-right:1px solid var(--border)}
+.sidebar-brand{padding:1.5rem 1.2rem;color:#fff;font-size:1.05rem;font-weight:800;border-bottom:1px solid rgba(255,239,196,.15);line-height:1.3;background:rgba(255,255,255,.03)}
+.sidebar-brand small{display:block;font-size:.7rem;font-weight:400;color:var(--accent);margin-top:.3rem;opacity:.9}
+.nav-item{display:flex;align-items:center;gap:.6rem;padding:.65rem 1.2rem;color:rgba(255,255,255,.8);font-size:.86rem;font-weight:500;cursor:pointer;border:none;background:none;width:100%;text-align:left;transition:background .15s,color .15s}
+.nav-item:hover{background:var(--sidebar-hover);color:#fff}
+.nav-item.active{background:var(--sidebar-active);color:#fff;border-left:3px solid var(--accent);padding-left:calc(1.2rem - 3px)}
+.nav-icon{font-size:1rem;width:18px;text-align:center}
+.sidebar-footer{margin-top:auto;padding:.8rem 1.2rem;font-size:.72rem;color:rgba(255,255,255,.4);border-top:1px solid rgba(255,255,255,.1)}
+
+/* ── MAIN ── */
+.main{margin-left:230px;flex:1;min-height:100vh;display:flex;flex-direction:column}
+.topbar{background:linear-gradient(135deg,#122e38 0%,#1a3a47 100%);padding:.8rem 1.5rem;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow-lg);position:sticky;top:0;z-index:50;border-bottom:1px solid var(--border)}
+.topbar-title{font-size:1rem;font-weight:700;color:#fff;letter-spacing:.2px}
+.topbar-project{font-size:.8rem;color:var(--accent);background:rgba(255,239,196,.15);border:1px solid rgba(255,239,196,.3);padding:.2rem .75rem;border-radius:20px;display:none;font-weight:600}
+.content{padding:1.5rem;flex:1}
+
+/* ── SECTIONS ── */
+.section{display:none}.section.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.4rem;margin-bottom:1.2rem;box-shadow:var(--shadow)}
+.card-title{font-size:.95rem;font-weight:700;color:var(--primary);margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem}
+.card-accent{border-top:3px solid var(--accent)}
+
+/* ── STAT CHIPS ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1rem;margin-bottom:1.4rem}
+.stat-chip{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.2rem;box-shadow:var(--shadow);border-top:3px solid var(--primary)}
+.stat-chip .label{font-size:.72rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:600}
+.stat-chip .value{font-size:1.6rem;font-weight:800;color:var(--primary);margin-top:.15rem}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:.35rem;padding:.5rem 1.1rem;border-radius:7px;border:none;cursor:pointer;font-size:.84rem;font-weight:600;transition:opacity .15s,transform .1s;text-decoration:none}
+.btn:hover{opacity:.88}.btn:active{transform:scale(.97)}
+.btn-primary{background:linear-gradient(135deg,#194350 0%,#2d6478 100%);color:#fff;box-shadow:0 3px 10px rgba(0,0,0,.4)}
+.btn-accent{background:linear-gradient(135deg,#FFEFC4 0%,#fde58a 100%);color:#112e38;border:1px solid var(--accent-dark);font-weight:700}
+.btn-success{background:var(--success);color:#fff}
+.btn-danger{background:var(--danger);color:#fff}
+.btn-outline{background:transparent;border:1.5px solid var(--primary);color:var(--primary)}
+.btn-sm{font-size:.76rem;padding:.3rem .7rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── FORMS ── */
+.form-group{margin-bottom:.9rem}
+label{display:block;font-size:.82rem;font-weight:600;margin-bottom:.3rem;color:var(--text)}
+input[type=text],select,textarea{width:100%;padding:.5rem .75rem;border:1.5px solid var(--border);border-radius:7px;font-size:.88rem;color:var(--text);background:#0d232c;outline:none;transition:border-color .15s}
+input:focus,select:focus{border-color:var(--primary);background:#152e38}
+
+/* ── DROP ZONE ── */
+.drop-zone{border:2.5px dashed var(--primary);border-radius:var(--radius);background:var(--primary-light);padding:2rem 1.5rem;text-align:center;color:var(--primary);cursor:pointer;transition:all .15s}
+.drop-zone:hover,.drop-zone.dragover{background:#1a3a47;border-color:var(--accent)}
+.drop-zone .dz-icon{font-size:2.2rem;margin-bottom:.5rem}
+.drop-zone .dz-hint{font-size:.78rem;color:var(--muted);margin-top:.3rem}
+.file-item{display:flex;align-items:center;gap:.5rem;padding:.45rem .7rem;background:#0d232c;border:1px solid var(--border);border-radius:7px;margin-bottom:.3rem;font-size:.82rem}
+.file-item .fn{flex:1;word-break:break-all;font-weight:500}
+.file-item .fsz{color:var(--muted);font-size:.75rem}
+.remove-btn{background:none;border:none;cursor:pointer;color:var(--danger);font-size:1rem;padding:.1rem .3rem;border-radius:4px}
+.remove-btn:hover{background:#fef2f2}
+
+/* ── TABLES ── */
+table{width:100%;border-collapse:collapse;font-size:.83rem}
+th{background:var(--primary-light);color:var(--primary);padding:.55rem .8rem;text-align:left;font-weight:700;font-size:.76rem;text-transform:uppercase;letter-spacing:.3px;border-bottom:2px solid var(--border)}
+td{padding:.55rem .8rem;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--primary-light)}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:.15rem .55rem;border-radius:20px;font-size:.71rem;font-weight:700}
+.bg{background:var(--success);color:#0d232c}.br{background:var(--danger);color:#0d232c}.by{background:var(--warn);color:#0d232c}
+.bb{background:var(--primary-light);color:var(--primary)}.bgr{background:#1a2a30;color:#94a3b8}
+
+/* ── BLOCKER / RISK CARDS ── */
+.b-card{padding:.8rem 1rem;border-radius:7px;margin-bottom:.7rem;border-left:4px solid var(--danger);background:#1a2e35}
+.b-card.resolved{border-left-color:var(--success);background:#1a3530}
+.r-card{padding:.8rem 1rem;border-radius:7px;margin-bottom:.7rem;border-left:4px solid var(--danger);background:var(--card);border:1px solid var(--border);border-left-width:4px}
+.ev-quote{margin:.35rem 0;padding:.35rem .7rem;border-left:3px solid var(--border);color:var(--muted);font-size:.8rem;font-style:italic;background:#0d232c;border-radius:0 4px 4px 0}
+.src{font-size:.7rem;color:#94a3b8}
+
+/* ── FORECAST ── */
+.fc-card{border-left:4px solid var(--muted)}
+.fc-ontrack{border-left-color:var(--success)}.fc-atrisk{border-left-color:var(--warn)}.fc-delayed{border-left-color:var(--danger)}
+
+/* ── TABS ── */
+.tab-bar{display:flex;gap:.35rem;margin-bottom:1.1rem;flex-wrap:wrap}
+.tab-btn{padding:.4rem .9rem;border:1.5px solid var(--border);border-radius:7px;background:#0d232c;color:var(--text);cursor:pointer;font-size:.82rem;font-weight:600;transition:all .15s}
+.tab-btn:hover{border-color:var(--primary);color:var(--primary)}
+.tab-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.tab-panel{display:none}.tab-panel.active{display:block}
+
+/* ── CHATBOT ── */
+.chat-wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column}
+.chat-msgs{overflow-y:auto;padding:1rem;display:flex;flex-direction:column;gap:.65rem;background:#0d232c;border:1px solid var(--border);border-radius:var(--radius) var(--radius) 0 0;max-height:calc(100vh - 160px)}
+.msg{max-width:78%;padding:.6rem .9rem;border-radius:10px;font-size:.86rem;line-height:1.5}
+.msg.user{align-self:flex-end;background:var(--primary-dark);color:#fff;border-bottom-right-radius:3px}
+.msg.bot{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:3px}
+.msg-meta{margin-top:.4rem;display:flex;gap:.3rem;flex-wrap:wrap;align-items:center}
+.msg-src{font-size:.69rem;padding:.1rem .4rem;border-radius:4px;background:var(--primary-light);color:var(--primary)}
+.msg-conf{font-size:.69rem;padding:.1rem .4rem;border-radius:4px}
+.typing{align-self:flex-start;padding:.6rem .9rem;background:var(--card);border:1px solid var(--border);border-radius:10px}
+.dots{display:flex;gap:.25rem}
+.dots span{width:7px;height:7px;border-radius:50%;background:var(--muted);animation:blink 1.4s infinite both}
+.dots span:nth-child(2){animation-delay:.2s}.dots span:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.25}40%{opacity:1}}
+.chat-input-row{display:flex;gap:.5rem;padding:.7rem;border:1px solid var(--border);border-top:none;background:var(--card);border-radius:0 0 var(--radius) var(--radius)}
+.chat-input-row input{flex:1}
+.suggestions{display:flex;gap:.35rem;flex-wrap:wrap;padding:.5rem .7rem;background:var(--primary-light);border-radius:var(--radius) var(--radius) 0 0;border:1px solid var(--border)}
+.sug-btn{padding:.25rem .6rem;border:1px solid var(--primary);border-radius:14px;background:var(--card);color:var(--primary);font-size:.75rem;cursor:pointer;transition:all .15s}
+.sug-btn:hover{background:var(--primary);color:#fff}
+
+/* ── HEALTH DASHBOARD ── */
+.health-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem}
+.health-num{font-size:3.2rem;font-weight:800;line-height:1}
+.health-grade{display:inline-block;padding:.2rem .8rem;border-radius:20px;font-size:.95rem;font-weight:700;margin-top:.4rem}
+.dim-bar{margin-bottom:.55rem}
+.dim-row{display:flex;justify-content:space-between;font-size:.78rem;margin-bottom:.15rem}
+.bar-track{background:#0d232c;border-radius:5px;height:7px;overflow:hidden}
+.bar-fill{height:100%;border-radius:5px;transition:width .4s}
+.fill-g{background:var(--success)}.fill-w{background:var(--warn)}.fill-b{background:var(--danger)}
+.insight-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:.9rem;margin-bottom:1rem}
+.insight-block{background:var(--primary-light);border:1px solid var(--border);border-radius:7px;padding:.8rem .9rem}
+.insight-label{font-size:.7rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;margin-bottom:.4rem}
+.count-row{display:flex;gap:.6rem;flex-wrap:wrap}
+.count-chip{text-align:center;min-width:56px;padding:.35rem .5rem;border-radius:7px}
+.count-num{font-size:1.3rem;font-weight:800;line-height:1}
+.count-lbl{font-size:.64rem;color:var(--muted);margin-top:.1rem}
+.cc-red{background:#3a1a1a}.cc-red .count-num{color:var(--danger)}
+.cc-warn{background:#3a2a0a}.cc-warn .count-num{color:var(--warn)}
+.cc-blue{background:var(--primary-light)}.cc-blue .count-num{color:var(--primary)}
+.cc-gray{background:#1a2a30}.cc-gray .count-num{color:#cbd5e1}
+
+/* ── OVERLAY ── */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:2000;align-items:center;justify-content:center}
+.overlay.show{display:flex}
+.ov-box{background:var(--card);border-radius:14px;padding:2rem 2.4rem;max-width:360px;width:90%;text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.18)}
+.spinner{width:46px;height:46px;border:5px solid var(--border);border-top-color:var(--primary);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto .9rem}
+@keyframes spin{to{transform:rotate(360deg)}}
+.ov-box h3{color:var(--primary);margin-bottom:.4rem}
+.ov-box p{color:var(--muted);font-size:.84rem}
+
+/* ── FLASH ── */
+.flash{padding:.6rem .9rem;border-radius:7px;margin-bottom:.7rem;font-size:.84rem}
+.flash.ok{background:#1a3530;color:var(--success)}.flash.err{background:#3a1a1a;color:var(--danger)}.flash.info{background:var(--primary-light);color:var(--primary)}
+
+/* ── EMPTY ── */
+.empty{text-align:center;padding:2.5rem 1rem;color:var(--muted)}
+.empty .ei{font-size:2.4rem;margin-bottom:.5rem}
+
+/* ── INCREMENTAL BANNER ── */
+.stale-banner{background:var(--accent);border-left:4px solid var(--accent-dark);border-radius:7px;padding:.6rem 1rem;font-size:.84rem;color:var(--warn);margin-bottom:.8rem;display:none}
+
+/* ── PROGRESS BAR ── */
+.upload-progress{background:var(--primary-light);border-radius:7px;height:10px;overflow:hidden;margin:.4rem 0}
+.upload-progress-fill{height:100%;background:var(--primary);border-radius:7px;transition:width .3s;width:0}
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%)}.sidebar.open{transform:translateX(0)}
+  .main{margin-left:0}.menu-btn{display:block!important}
+  .health-grid{grid-template-columns:1fr}
+}
+.menu-btn{display:none;background:none;border:none;cursor:pointer;font-size:1.3rem;color:#fff;margin-right:.5rem}
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-brand">⚙ AI Project Advisor<small>Intelligence &amp; Risk Platform</small></div>
+  <nav style="padding:.5rem 0;flex:1">
+    <button class="nav-item active" data-sec="upload"><span class="nav-icon">📤</span>Upload Documents</button>
+    <button class="nav-item" data-sec="kb"><span class="nav-icon">📚</span>Knowledge Base</button>
+    <button class="nav-item" data-sec="analysis"><span class="nav-icon">⚡</span>Project Analysis</button>
+    <button class="nav-item" data-sec="health"><span class="nav-icon">🏥</span>Health Dashboard</button>
+    <button class="nav-item" data-sec="docs"><span class="nav-icon">📄</span>Generated Docs</button>
+    <button class="nav-item" data-sec="chat"><span class="nav-icon">💬</span>AI Assistant</button>
+    <button class="nav-item" data-sec="report"><span class="nav-icon">📋</span>Report</button>
+  </nav>
+  <div class="sidebar-footer">AI Project Intelligence &amp; Risk Advisor</div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;">
+      <button class="menu-btn" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+      <span class="topbar-title" id="topbarTitle">Upload Documents</span>
+    </div>
+    <span class="topbar-project" id="topbarProject"></span>
+  </div>
+
+  <div class="content">
+
+  <!-- ══ UPLOAD ══ -->
+  <div class="section active" id="sec-upload">
+    <!-- Hero welcome banner -->
+    <div style="background:linear-gradient(135deg,#122e38 0%,#1a3a47 100%);border-radius:var(--radius);padding:1.8rem 2rem;margin-bottom:1.4rem;color:#fff;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;box-shadow:var(--shadow-lg);border:1px solid var(--border)">
+      <div>
+        <h2 style="color:#fff;font-size:1.3rem;margin-bottom:.3rem">AI Project Intelligence Platform</h2>
+        <p style="color:rgba(255,239,196,.85);font-size:.85rem;max-width:500px">Upload your project documents — proposals, meeting notes, sprint updates, SRS files — and get instant AI-powered insights on scope, risks, and blockers.</p>
+      </div>
+      <div style="text-align:center;background:rgba(255,239,196,.12);border:1px solid rgba(255,239,196,.25);border-radius:10px;padding:1rem 1.5rem">
+        <div style="font-size:2rem;font-weight:800;color:var(--accent)" id="heroDocsCount">0</div>
+        <div style="font-size:.75rem;color:rgba(255,255,255,.7);margin-top:.2rem">Documents Indexed</div>
+      </div>
+    </div>
+    <div class="card card-accent" style="max-width:640px">
+      <div class="card-title">📤 Upload Project Documents</div>
+      <p style="color:var(--muted);font-size:.83rem;margin-bottom:1rem">
+        Drag and drop files or click to select. Supported: PDF, DOCX, CSV, TXT, MD.
+        To <strong>add more documents</strong> to an existing project, use the same project name — the knowledge base updates automatically.
+      </p>
+      <!-- Upload form with correct name attributes -->
+      <form id="uploadForm" method="POST" action="/upload" enctype="multipart/form-data">
+        <div class="form-group">
+          <label for="project_id">Project Name</label>
+          <input type="text" id="project_id" name="project_id" placeholder="Give a project name" required autocomplete="off"/>
+          <div style="font-size:.74rem;color:var(--muted);margin-top:.25rem">Letters, numbers, hyphens and underscores only.</div>
+        </div>
+        <div class="form-group">
+          <label>Files</label>
+          <!-- Real file input with correct name -->
+          <input type="file" id="fileInputReal" name="documents" multiple
+            accept=".pdf,.docx,.doc,.csv,.txt,.md" style="display:none"/>
+          <div class="drop-zone" id="dropZone" tabindex="0">
+            <div class="dz-icon">📎</div>
+            <div id="dzLabel">Click or drag files here</div>
+            <div class="dz-hint">PDF · DOCX · CSV · TXT · MD — multiple files allowed</div>
+          </div>
+          <ul id="fileList" style="list-style:none;margin-top:.5rem;padding:0"></ul>
+        </div>
+        <div style="display:flex;gap:.6rem;align-items:center;flex-wrap:wrap">
+          <button type="submit" class="btn btn-primary" id="uploadBtn" disabled>⬆ Upload &amp; Index</button>
+          <span id="fileCount" style="font-size:.8rem;color:var(--muted)"></span>
+        </div>
+      </form>
+      <div id="uploadProgress" style="display:none">
+        <div class="upload-progress"><div class="upload-progress-fill" id="uploadFill"></div></div>
+      </div>
+    </div>
+    <div id="uploadResult"></div>
+  </div>
+
+  <!-- ══ KNOWLEDGE BASE ══ -->
+  <div class="section" id="sec-kb">
+    <div class="card">
+      <div class="card-title">📚 Knowledge Base</div>
+      <div id="kbContent"><div class="empty"><div class="ei">📚</div><p>Upload documents to build your knowledge base.</p></div></div>
+    </div>
+  </div>
+
+  <!-- ══ ANALYSIS ══ -->
+  <div class="section" id="sec-analysis">
+    <div id="analysisContent">
+      <div class="card" style="text-align:center;padding:2.5rem">
+        <div style="font-size:2rem;margin-bottom:.8rem">⚡</div>
+        <h2 style="color:var(--primary);margin-bottom:.6rem">Run Project Analysis</h2>
+        <p style="color:var(--muted);margin-bottom:1.2rem;max-width:400px;margin-left:auto;margin-right:auto">Upload your project documents, then click below to extract scope, blockers, risks and generate insights.</p>
+        <button class="btn btn-primary" onclick="runAnalysis()">⚡ Run Analysis</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ HEALTH DASHBOARD ══ -->
+  <div class="section" id="sec-health">
+    <div id="healthContent"><div class="empty"><div class="ei">🏥</div><p>Run analysis to view the health dashboard.</p></div></div>
+  </div>
+
+  <!-- ══ GENERATED DOCS ══ -->
+  <div class="section" id="sec-docs">
+    <div id="docsContent"><div class="empty"><div class="ei">📄</div><p>Run analysis to view generated documentation.</p></div></div>
+  </div>
+
+  <!-- ══ CHATBOT ══ -->
+  <div class="section" id="sec-chat">
+    <div class="chat-wrap">
+      <div class="suggestions" id="chatSugs">
+        <button class="sug-btn" onclick="sendSug('What are the main project risks?')">Main risks?</button>
+        <button class="sug-btn" onclick="sendSug('Which blockers need immediate attention?')">Open blockers?</button>
+        <button class="sug-btn" onclick="sendSug('What deliverables are pending?')">Pending deliverables?</button>
+        <button class="sug-btn" onclick="sendSug('What is the current project health?')">Project health?</button>
+        <button class="sug-btn" onclick="sendSug('What information is missing from the project?')">Missing info?</button>
+      </div>
+      <div class="chat-msgs" id="chatMsgs">
+        <div class="msg bot">Hello! I'm your AI project assistant. Ask me anything about your uploaded documents. 👋</div>
+      </div>
+      <div class="chat-input-row">
+        <input type="text" id="chatInput" placeholder="Ask a question about your project… (Enter to send)" onkeydown="if(event.key==='Enter')sendChat()"/>
+        <button class="btn btn-primary" onclick="sendChat()" id="chatBtn">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REPORT ══ -->
+  <div class="section" id="sec-report">
+    <div class="card card-accent">
+      <div class="card-title">📋 Project Report</div>
+      <p style="color:var(--muted);font-size:.84rem;margin-bottom:1rem">
+        View your project report below or download it as a PDF. <strong>Run analysis first</strong> to generate the report content.
+      </p>
+      <div id="reportStatus"></div>
+      <div style="display:flex;gap:.6rem;margin-bottom:1.2rem;flex-wrap:wrap">
+        <button class="btn btn-primary" onclick="generatePDF()" id="pdfBtn">📄 Download PDF</button>
+        <button class="btn btn-outline" onclick="showReportInline()" id="viewBtn">👁 View Report</button>
+      </div>
+      <div id="reportInline" style="display:none"></div>
+    </div>
+  </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- OVERLAY -->
+<div class="overlay" id="overlay">
+  <div class="ov-box">
+    <div class="spinner"></div>
+    <h3 id="ovTitle">Processing…</h3>
+    <p id="ovMsg"></p>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════
+let projectId = "";           // set when user uploads — never pre-loaded from server
+const preFilledId = ""; // never pre-fill — user types their own project name
+
+let currentReport = null;
+
+const SEC_TITLES = {upload:'Upload Documents',kb:'Knowledge Base',analysis:'Project Analysis',health:'Health Dashboard',docs:'Generated Docs',chat:'AI Assistant',report:'Report'};
+
+// ══════════════════════════════════════════════════════
+// SIDEBAR NAV
+// ══════════════════════════════════════════════════════
+document.querySelectorAll('.nav-item[data-sec]').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('sec-' + btn.dataset.sec).classList.add('active');
+    document.getElementById('topbarTitle').textContent = SEC_TITLES[btn.dataset.sec] || '';
+    if (window.innerWidth <= 768) document.getElementById('sidebar').classList.remove('open');
+  });
+});
+
+function switchTo(sec) {
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  const btn = document.querySelector(`[data-sec="${sec}"]`);
+  if (btn) btn.classList.add('active');
+  const el = document.getElementById('sec-' + sec);
+  if (el) el.classList.add('active');
+  document.getElementById('topbarTitle').textContent = SEC_TITLES[sec] || '';
+}
+
+// ══════════════════════════════════════════════════════
+// PROJECT BADGE
+// ══════════════════════════════════════════════════════
+function setProjectBadge(id) {
+  const el = document.getElementById('topbarProject');
+  if (id) { el.textContent = id.replace(/-/g,' '); el.style.display = 'inline'; }
+  else el.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════════════
+// FILE UPLOAD — simple, reliable, no DataTransfer tricks
+// ══════════════════════════════════════════════════════
+const realInput   = document.getElementById('fileInputReal');
+const dropZone    = document.getElementById('dropZone');
+const dzLabel     = document.getElementById('dzLabel');
+const fileList    = document.getElementById('fileList');
+const fileCount   = document.getElementById('fileCount');
+const uploadBtn   = document.getElementById('uploadBtn');
+const uploadForm  = document.getElementById('uploadForm');
+
+// Staged files list (independent of <input>)
+let stagedFiles = [];
+
+// Open picker on click / keyboard
+dropZone.addEventListener('click', () => realInput.click());
+dropZone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); realInput.click(); } });
+
+// Drag & drop
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('dragover');
+  stageFiles(Array.from(e.dataTransfer.files));
+});
+
+// File picker change
+realInput.addEventListener('change', () => {
+  stageFiles(Array.from(realInput.files));
+  realInput.value = ''; // reset so same file can be re-selected
+});
+
+function stageFiles(incoming) {
+  const existing = new Set(stagedFiles.map(f => f.name));
+  incoming.forEach(f => { if (!existing.has(f.name)) { stagedFiles.push(f); existing.add(f.name); } });
+  renderStaged();
+}
+
+function removeStaged(idx) {
+  stagedFiles.splice(idx, 1);
+  renderStaged();
+}
+
+function renderStaged() {
+  fileList.innerHTML = '';
+  stagedFiles.forEach((f, i) => {
+    const icons = {pdf:'📄',docx:'📝',doc:'📝',csv:'📊',txt:'📃',md:'📃'};
+    const ext = f.name.split('.').pop().toLowerCase();
+    const icon = icons[ext] || '📎';
+    const li = document.createElement('li');
+    li.className = 'file-item';
+    li.innerHTML = `<span>${icon}</span><span class="fn">${esc(f.name)}</span><span class="fsz">${fmtSz(f.size)}</span><button type="button" class="remove-btn" title="Remove">✕</button>`;
+    li.querySelector('.remove-btn').onclick = () => removeStaged(i);
+    fileList.appendChild(li);
+  });
+  if (stagedFiles.length === 0) {
+    dzLabel.textContent = 'Click or drag files here';
+    fileCount.textContent = '';
+    uploadBtn.disabled = true;
+  } else {
+    dzLabel.textContent = stagedFiles.length === 1 ? stagedFiles[0].name : `${stagedFiles.length} files selected`;
+    fileCount.textContent = `${stagedFiles.length} file${stagedFiles.length > 1 ? 's' : ''} ready`;
+    uploadBtn.disabled = false;
+  }
+}
+
+// SUBMIT — build FormData manually from stagedFiles array
+uploadForm.addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const pid = document.getElementById('project_id').value.trim();
+  if (!pid) { alert('Please enter a project name.'); return; }
+  if (stagedFiles.length === 0) { alert('Please select at least one file.'); return; }
+
+  showOverlay('Uploading…', 'Processing and indexing your documents. This may take a moment.');
+
+  const fd = new FormData();
+  fd.append('project_id', pid);
+  stagedFiles.forEach(f => fd.append('documents', f, f.name));
+
+  try {
+    const resp = await fetch('/upload', {
+      method: 'POST',
+      body: fd,
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+
+    let data;
+    const ct = resp.headers.get('content-type') || '';
+    if (ct.includes('application/json')) {
+      data = await resp.json();
+    } else {
+      const text = await resp.text();
+      hideOverlay();
+      showResult('<div class="flash err">Server error — unexpected response. Check the Flask console.</div>');
+      console.error('Non-JSON response:', text.slice(0, 500));
+      return;
+    }
+
+    hideOverlay();
+
+    if (data.error) {
+      showResult(`<div class="flash err">⚠ ${esc(data.error)}</div>`);
+      return;
+    }
+
+    // Success
+    projectId = data.project_id;
+    setProjectBadge(projectId);
+    stagedFiles = [];
+    renderStaged();
+    loadKB();
+
+    // Clear ALL previous project data — fresh start for the new project
+    resetAllSections();
+
+    // Build result HTML
+    let html = '<div class="card"><div class="card-title">✅ Upload Complete</div>';
+    const successes = (data.results || []).filter(r => r.status === 'success');
+    const errors    = (data.results || []).filter(r => r.status === 'error');
+    if (successes.length) {
+      html += `<div class="flash ok" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.5rem">
+        <span>✓ <strong>${successes.length} file${successes.length > 1 ? 's' : ''}</strong> successfully processed and added to knowledge base.</span>
+      </div>`;
+    }
+    if (errors.length) {
+      html += `<div class="flash err">✗ ${errors.length} file${errors.length > 1 ? 's' : ''} could not be processed:</div>`;
+      // Only list the error files, not successes
+      errors.forEach(r => {
+        html += `<div style="font-size:.82rem;color:var(--danger);padding:.3rem .5rem">• ${esc(r.name)}: ${esc(r.message)}</div>`;
+      });
+    }
+    // Simple success list — file names only, no chunk counts
+    if (successes.length) {
+      html += '<ul style="margin:.6rem 0;padding-left:1.2rem">';
+      successes.forEach(r => {
+        const dup = r.duplicate ? ' <span class="badge by">updated</span>' : '';
+        html += `<li style="font-size:.84rem;padding:.2rem 0">${esc(r.name)}${dup}</li>`;
+      });
+      html += '</ul>';
+    }
+    if (successes.length) {
+      html += `<div style="margin-top:.9rem"><button class="btn btn-primary" onclick="switchTo('analysis');runAnalysis()">⚡ Run Analysis Now</button></div>`;
+    }
+    html += '</div>';
+    showResult(html);
+
+  } catch (err) {
+    hideOverlay();
+    showResult(`<div class="flash err">Upload failed: ${esc(err.message)}</div>`);
+    console.error('Upload error:', err);
+  }
+});
+
+function showResult(html) {
+  document.getElementById('uploadResult').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// RESET — clear all sections when uploading a new project
+// ══════════════════════════════════════════════════════
+function resetAllSections() {
+  currentReport = null;
+  // Analysis — back to empty state
+  document.getElementById('analysisContent').innerHTML =
+    '<div class="card" style="text-align:center;padding:2.5rem">' +
+    '<div style="font-size:2rem;margin-bottom:.8rem">⚡</div>' +
+    '<h2 style="color:var(--primary);margin-bottom:.6rem">Run Project Analysis</h2>' +
+    '<p style="color:var(--muted);margin-bottom:1.2rem;max-width:400px;margin-left:auto;margin-right:auto">Upload your project documents, then click below to extract scope, blockers, risks and generate insights.</p>' +
+    '<button class="btn btn-primary" onclick="runAnalysis()">⚡ Run Analysis</button></div>';
+  // Health — back to empty
+  document.getElementById('healthContent').innerHTML =
+    '<div class="empty"><div class="ei">🏥</div><p>Run analysis to view the health dashboard.</p></div>';
+  // Docs — back to empty
+  document.getElementById('docsContent').innerHTML =
+    '<div class="empty"><div class="ei">📄</div><p>Run analysis to view generated documentation.</p></div>';
+  // Chat — clear all previous messages, keep only welcome
+  document.getElementById('chatMsgs').innerHTML =
+    '<div class="msg bot">Hello! I\'m your AI project assistant. Ask me anything about your uploaded documents. 👋</div>';
+  // Report inline — clear
+  document.getElementById('reportInline').innerHTML = '';
+  document.getElementById('reportInline').style.display = 'none';
+  document.getElementById('reportStatus').innerHTML = '';
+}
+
+// ══════════════════════════════════════════════════════
+// KNOWLEDGE BASE
+// ══════════════════════════════════════════════════════
+function loadKB() {
+  if (!projectId) return;
+  fetch(`/api/sources?project_id=${encodeURIComponent(projectId)}`)
+    .then(r => r.json())
+    .then(data => {
+      const sources = data.sources || {};
+      const stats   = data.stats   || {};
+      const keys = Object.keys(sources);
+      let html = `<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem">
+        <span class="badge bb">${keys.length} document${keys.length !== 1 ? 's' : ''}</span>
+        <span class="badge bgr">${stats.chunk_count || 0} chunks</span></div>`;
+      if (keys.length === 0) {
+        html += '<div class="empty"><div class="ei">📭</div><p>No documents indexed yet.</p></div>';
+      } else {
+        html += '<table><thead><tr><th>Filename</th><th style="text-align:center">Chunks</th></tr></thead><tbody>';
+        keys.forEach(fname => {
+          const icons = {pdf:'📄',docx:'📝',doc:'📝',csv:'📊',txt:'📃',md:'📃'};
+          const ext = fname.split('.').pop().toLowerCase();
+          const icon = icons[ext] || '📎';
+          html += `<tr><td>${icon} ${esc(fname)}</td><td style="text-align:center"><span class="badge bgr">${sources[fname]}</span></td></tr>`;
+        });
+        html += '</tbody></table>';
+        html += `<div style="margin-top:.8rem;display:flex;gap:.5rem;flex-wrap:wrap">
+          <button class="btn btn-sm btn-primary" onclick="switchTo('upload')">＋ Add More Docs</button>
+          <button class="btn btn-sm btn-outline" onclick="switchTo('analysis');runAnalysis()">⚡ Analyse</button></div>`;
+      }
+      document.getElementById('kbContent').innerHTML = html;
+      // Update hero counter
+      const heroEl = document.getElementById('heroDocsCount');
+      if (heroEl) heroEl.textContent = keys.length;
+    })
+    .catch(() => {
+      document.getElementById('kbContent').innerHTML = '<div class="flash err">Could not load knowledge base.</div>';
+    });
+}
+
+// ══════════════════════════════════════════════════════
+// ANALYSIS
+// ══════════════════════════════════════════════════════
+function runAnalysis() {
+  if (!projectId) {
+    alert('Please upload documents and enter a project name first.');
+    switchTo('upload');
+    return;
+  }
+  // Clear ALL previous content FIRST — no old analysis visible in background
+  currentReport = null;
+  document.getElementById('analysisContent').innerHTML = '';
+  document.getElementById('healthContent').innerHTML = '<div class="empty"><div class="ei">🏥</div><p>Analysing…</p></div>';
+  document.getElementById('docsContent').innerHTML = '<div class="empty"><div class="ei">📄</div><p>Analysing…</p></div>';
+  document.getElementById('reportInline').innerHTML = '';
+  document.getElementById('reportInline').style.display = 'none';
+  document.getElementById('reportStatus').innerHTML = '';
+
+  showOverlay('Analysing project…', 'Running scope extraction, blocker detection, and risk assessment. This takes 5–15 seconds.');
+  const fd = new FormData();
+  fd.append('project_id', projectId);
+  fetch('/analyse', { method: 'POST', body: fd, headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+    .then(r => r.json())
+    .then(data => {
+      hideOverlay();
+      if (data.error) {
+        document.getElementById('analysisContent').innerHTML = `<div class="card" style="text-align:center;padding:2rem">
+          <div style="font-size:1.8rem;margin-bottom:.5rem">⚠</div>
+          <h2 style="color:var(--danger);margin-bottom:.5rem">Analysis Failed</h2>
+          <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem;max-width:400px;margin-left:auto;margin-right:auto">${esc(data.error)}</p>
+          <button class="btn btn-primary" onclick="runAnalysis()">🔄 Retry Analysis</button></div>`;
+        return;
+      }
+      currentReport = data.report;
+      renderReport(currentReport);
+    })
+    .catch(err => {
+      hideOverlay();
+      document.getElementById('analysisContent').innerHTML = `<div class="flash err">Error: ${esc(err.message)}</div>`;
+    })
+    .finally(() => {
+      // Always close overlay — belt-and-suspenders
+      hideOverlay();
+    });
+}
+
+// ══════════════════════════════════════════════════════
+// RENDER REPORT
+// ══════════════════════════════════════════════════════
+function renderReport(r) {
+  if (!r) return;
+  const hs = r.health_score || {};
+  const sc = r.scope        || {};
+  const bl = r.blockers     || {};
+  const ri = r.risks        || {};
+  const docs = r.docs       || {};
+
+  // ── Analysis section ──
+  let html = '';
+  const statusBadge = r.status === 'ok' ? '<span class="badge bg">✓ Complete</span>' : r.status === 'partial' ? '<span class="badge by">⚠ Partial</span>' : '<span class="badge br">✗ Error</span>';
+  html += `<div class="card"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
+    <div><strong style="font-size:1rem">${esc(projectId)}</strong> ${statusBadge}<br>
+    <span style="font-size:.78rem;color:var(--muted)">Generated ${esc(r.generated_at||'')} · ${r.duration_seconds||0}s</span></div></div></div>`;
+
+  if (r.warnings && r.warnings.length) {
+    html += '<div class="flash info"><strong>ℹ Information gaps:</strong><ul style="margin:.3rem 0 0 1rem">';
+    r.warnings.forEach(w => { html += `<li>${esc(w)}</li>`; });
+    html += '</ul></div>';
+  }
+
+  // Tabs — 3 agent tabs only; docs are in the separate Generated Docs section
+  html += '<div class="tab-bar">'
+    + '<button class="tab-btn active" data-t="scope" onclick="switchTab(this,\'scope\')">📋 Scope & Deliverables</button>'
+    + '<button class="tab-btn" data-t="blockers" onclick="switchTab(this,\'blockers\')">🚧 Blockers & Actions</button>'
+    + '<button class="tab-btn" data-t="risks" onclick="switchTab(this,\'risks\')">⚠ Risks & Forecast</button>'
+    + '</div>';
+
+  // --- SCOPE TAB ---
+  html += '<div class="tab-panel active" id="tp-scope">';
+  if (sc.project_goals && sc.project_goals.length) {
+    html += '<div class="card"><div class="card-title">🎯 Project Goals</div><ul style="padding-left:1.2rem;line-height:1.9">';
+    sc.project_goals.forEach(g => { html += `<li>${esc(g.goal||'')} <span class="src">${esc(g.source||'')}</span></li>`; });
+    html += '</ul></div>';
+  }
+  if ((sc.scope && sc.scope.length) || (sc.out_of_scope && sc.out_of_scope.length)) {
+    html += '<div class="card"><div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem">';
+    html += '<div><div class="card-title">✅ In Scope</div>';
+    if (sc.scope && sc.scope.length) { html += '<ul style="padding-left:1.1rem;line-height:1.8">'; sc.scope.forEach(s => { html += `<li>${esc(s.item||'')} <span class="src">${esc(s.source||'')}</span></li>`; }); html += '</ul>'; }
+    else html += '<p style="color:var(--muted)">Not documented.</p>';
+    html += '</div><div><div class="card-title">🚫 Out of Scope</div>';
+    if (sc.out_of_scope && sc.out_of_scope.length) { html += '<ul style="padding-left:1.1rem;line-height:1.8">'; sc.out_of_scope.forEach(s => { html += `<li>${esc(s.item||'')} <span class="src">${esc(s.source||'')}</span></li>`; }); html += '</ul>'; }
+    else html += '<p style="color:var(--muted)">Not documented.</p>';
+    html += '</div></div></div>';
+  }
+  if (sc.deliverables && sc.deliverables.length) {
+    html += '<div class="card"><div class="card-title">📦 Deliverables</div><table><thead><tr><th>Name</th><th>Description</th><th>Deadline</th><th>Owner</th><th>Source</th></tr></thead><tbody>';
+    sc.deliverables.forEach(d => { html += `<tr><td><strong>${esc(d.name||'')}</strong></td><td style="font-size:.82rem">${esc(d.description||'—')}</td><td>${esc(d.deadline||'—')}</td><td>${esc(d.owner||'Unassigned')}</td><td class="src">${esc(d.source||'')}</td></tr>`; });
+    html += '</tbody></table></div>';
+  }
+  if (sc.milestones && sc.milestones.length) {
+    html += '<div class="card"><div class="card-title">🏁 Milestones</div><table><thead><tr><th>Milestone</th><th>Date</th><th>Source</th></tr></thead><tbody>';
+    sc.milestones.forEach(m => { html += `<tr><td><strong>${esc(m.name||'')}</strong></td><td>${esc(m.date||'—')}</td><td class="src">${esc(m.source||'')}</td></tr>`; });
+    html += '</tbody></table></div>';
+  }
+  if (!sc.project_goals && !sc.deliverables && !sc.milestones) html += '<div class="empty"><div class="ei">📋</div><p>No scope information extracted.</p></div>';
+  html += '</div>';
+
+  // --- BLOCKERS TAB ---
+  html += '<div class="tab-panel" id="tp-blockers">';
+  if (bl.blockers && bl.blockers.length) {
+    html += '<div class="card"><div class="card-title">🚧 Blockers</div>';
+    bl.blockers.forEach(b => {
+      html += `<div class="b-card ${b.status==='Resolved'?'resolved':''}">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
+          <div><span class="badge bgr">${esc(b.blocker_id||'')}</span> <strong>${esc(b.description||'')}</strong></div>
+          <span class="badge ${b.status==='Open'?'br':'bg'}">${esc(b.status||'')}</span></div>`;
+      if (b.impact) html += `<p style="margin:.3rem 0;font-size:.82rem;color:var(--muted)">Impact: ${esc(b.impact)}</p>`;
+      if (b.recommended_resolution) html += `<p style="font-size:.8rem;color:var(--success)">💡 ${esc(b.recommended_resolution)}</p>`;
+      html += `<div class="src">Owner: ${esc(b.owner||'Unassigned')} · ${esc(b.source||'')}</div></div>`;
+    });
+    html += '</div>';
+  }
+  if (bl.action_items && bl.action_items.length) {
+    html += '<div class="card"><div class="card-title">✅ Action Items</div><table><thead><tr><th>ID</th><th>Description</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+    bl.action_items.forEach(a => {
+      html += `<tr><td><code>${esc(a.action_id||'')}</code></td><td>${esc(a.description||'')}</td><td>${esc(a.owner||'—')}</td><td>${esc(a.due_date||'—')}</td>
+        <td><span class="badge ${a.priority==='High'?'br':'bgr'}">${esc(a.priority||'')}</span></td>
+        <td><span class="badge ${a.status==='Completed'?'bg':a.status==='Pending'?'by':'bgr'}">${esc(a.status||'')}</span></td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  if (bl.pending_decisions && bl.pending_decisions.length) {
+    html += '<div class="card"><div class="card-title">🤔 Pending Decisions</div><table><thead><tr><th>ID</th><th>Description</th><th>Owner</th><th>Source</th></tr></thead><tbody>';
+    bl.pending_decisions.forEach(d => { html += `<tr><td><code>${esc(d.decision_id||'')}</code></td><td>${esc(d.description||'')}</td><td>${esc(d.owner||'—')}</td><td class="src">${esc(d.source||'')}</td></tr>`; });
+    html += '</tbody></table></div>';
+  }
+  if (!bl.blockers && !bl.action_items) html += '<div class="empty"><div class="ei">🚧</div><p>No blockers or action items found.</p></div>';
+  html += '</div>';
+
+  // --- RISKS TAB ---
+  html += '<div class="tab-panel" id="tp-risks">';
+  const fc = ri.delivery_forecast || {};
+  if (fc.status) {
+    const fcCls = fc.status==='On Track'?'fc-ontrack':fc.status==='At Risk'?'fc-atrisk':fc.status==='Delayed'?'fc-delayed':'';
+    const fcBadge = fc.status==='On Track'?'<span class="badge bg">On Track</span>':fc.status==='At Risk'?'<span class="badge by">At Risk</span>':fc.status==='Delayed'?'<span class="badge br">Delayed</span>':`<span class="badge bgr">${esc(fc.status)}</span>`;
+    html += `<div class="card fc-card ${fcCls}"><div class="card-title">📅 Delivery Forecast</div>`;
+    html += `<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.5rem">${fcBadge}<span class="badge bgr">Confidence: ${esc(fc.confidence||'Low')}</span><span class="badge bgr">Method: ${esc(fc.forecast_method||'none')}</span></div>`;
+    if (fc.estimated_completion_date) html += `<p>Estimated completion: <strong>${esc(fc.estimated_completion_date)}</strong></p>`;
+    if (fc.delayed_milestones && fc.delayed_milestones.length) html += `<p style="color:var(--danger);margin-top:.3rem">Delayed: ${fc.delayed_milestones.map(m=>esc(m)).join(', ')}</p>`;
+    if (fc.assumptions && fc.assumptions.length) {
+      html += '<div style="margin-top:.5rem;font-size:.79rem;color:var(--muted)"><strong>Assumptions:</strong><ul style="margin:.2rem 0 0 1rem">';
+      fc.assumptions.forEach(a => { html += `<li>${esc(a)}</li>`; });
+      html += '</ul></div>';
+    }
+    html += '</div>';
+  }
+  if (ri.risks && ri.risks.length) {
+    html += '<div class="card"><div class="card-title">⚠ Risk Register</div>';
+    const crit = ri.risks.filter(r=>r.severity==='Critical').length;
+    const high = ri.risks.filter(r=>r.severity==='High').length;
+    const med  = ri.risks.filter(r=>r.severity==='Medium').length;
+    html += '<div style="display:flex;gap:.4rem;flex-wrap:wrap;margin-bottom:.8rem">';
+    if (crit) html += `<span class="badge br">Critical: ${crit}</span>`;
+    if (high) html += `<span class="badge" style="background:#fef3f0;color:var(--danger)">High: ${high}</span>`;
+    if (med)  html += `<span class="badge by">Medium: ${med}</span>`;
+    html += '</div>';
+    ri.risks.forEach(r => {
+      const c = r.severity==='Critical'||r.severity==='High'?'var(--danger)':r.severity==='Medium'?'var(--warn)':'var(--muted)';
+      html += `<div class="r-card" style="border-left-color:${c}">
+        <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.3rem">
+          <div><span class="badge bgr">${esc(r.risk_id||'')}</span> <strong>${esc(r.title||'')}</strong></div>
+          <span class="badge ${r.status==='Confirmed'?'br':'bb'}">${esc(r.status||'')}</span></div>
+        <p style="margin:.35rem 0;font-size:.83rem">${esc(r.description||r.potential_impact||'')}</p>`;
+      if (r.mitigation) html += `<p style="font-size:.8rem;color:var(--success)">💡 ${esc(r.mitigation)}</p>`;
+      html += `<div class="src">${esc(r.source||'')}</div></div>`;
+    });
+    html += '</div>';
+  }
+  if (!ri.risks) html += '<div class="empty"><div class="ei">⚠</div><p>No risks identified.</p></div>';
+  html += '</div>';
+  // End of analysis tabs — docs are in the separate Generated Docs section
+
+  document.getElementById('analysisContent').innerHTML = html;
+  renderHealth(hs, sc, bl, ri);
+  renderDocsSection(docs);
+}
+
+// ══════════════════════════════════════════════════════
+// TAB SWITCHER (within analysis/docs)
+// ══════════════════════════════════════════════════════
+function switchTab(btn, tabId) {
+  const parent = btn.closest('.section') || document.body;
+  parent.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  parent.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  const panel = document.getElementById('tp-' + tabId);
+  if (panel) panel.classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════
+// HEALTH DASHBOARD + RADAR CHART
+// ══════════════════════════════════════════════════════
+function renderHealth(hs, sc, bl, ri) {
+  if (!hs || hs.overall === undefined) {
+    document.getElementById('healthContent').innerHTML = '<div class="empty"><div class="ei">🏥</div><p>Run analysis first.</p></div>';
+    return;
+  }
+  const score = hs.overall || 0;
+  const grade = hs.grade   || 'F';
+  const scoreColor = score>=80?'var(--success)':score>=60?'var(--warn)':'var(--danger)';
+  const gradeBg    = score>=80?'#d1fae5':score>=60?'#fef3c7':'#fee2e2';
+
+  const dims = hs.dimensions || [];
+  const dimScores = dims.map(d => d.score || 0);
+  const dimNames  = dims.map(d => d.name  || '');
+
+  // Build radar SVG
+  const cx=130,cy=130,r=90,n=Math.max(dimScores.length,1);
+  const angles = dimScores.map((_,i) => -Math.PI/2 + (i*2*Math.PI/n));
+  let gridSvg='', axisSvg='', dataPts='';
+  [.25,.5,.75,1].forEach(pct => {
+    const pts = angles.map(a=>`${cx+r*pct*Math.cos(a)},${cy+r*pct*Math.sin(a)}`).join(' ');
+    gridSvg += `<polygon points="${pts}" fill="none" stroke="#dde6ed" stroke-width="1"/>`;
+  });
+  dimNames.forEach((name,i) => {
+    const x=cx+r*Math.cos(angles[i]),y=cy+r*Math.sin(angles[i]);
+    axisSvg += `<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#dde6ed" stroke-width="1"/>`;
+    const lx=cx+(r+20)*Math.cos(angles[i]),ly=cy+(r+20)*Math.sin(angles[i]);
+    const shortName = name.replace('Scope Clarity','Scope').replace('Timeline Risk','Timeline').replace('Blocker Impact','Blockers').replace('Risk Exposure','Risks');
+    axisSvg += `<text x="${lx}" y="${ly}" text-anchor="middle" dy=".35em" font-size="9" fill="var(--muted)" font-weight="600">${shortName}</text>`;
+    const dist=(dimScores[i]/100)*r;
+    dataPts += `${cx+dist*Math.cos(angles[i])},${cy+dist*Math.sin(angles[i])} `;
+  });
+  const dots = dimScores.map((s,i) => {
+    const dist=(s/100)*r;
+    return `<circle cx="${cx+dist*Math.cos(angles[i])}" cy="${cy+dist*Math.sin(angles[i])}" r="3.5" fill="#086288"/>`;
+  }).join('');
+  const radar = `<svg width="260" height="260" viewBox="0 0 260 260">${gridSvg}${axisSvg}
+    <polygon points="${dataPts}" fill="rgba(8,98,136,.18)" stroke="#086288" stroke-width="2"/>
+    ${dots}</svg>`;
+
+  // Dimension bars
+  let bars='';
+  dims.forEach(d => {
+    const pct=d.score||0;
+    const cls=pct>=70?'fill-g':pct>=50?'fill-w':'fill-b';
+    bars+=`<div class="dim-bar"><div class="dim-row"><span style="font-weight:600">${esc(d.name||'')}</span><span style="color:var(--muted)">${pct}/100 (${Math.round((d.weight||0)*100)}%)</span></div>
+    <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div></div>`;
+  });
+
+  // Insight counts
+  const goalCnt  = (sc.project_goals||[]).length;
+  const delCnt   = (sc.deliverables||[]).length;
+  const openBlk  = (bl.blockers||[]).filter(b=>b.status==='Open').length;
+  const actCnt   = (bl.action_items||[]).length;
+  const riskCnt  = (ri.risks||[]).length;
+  const critCnt  = (ri.risks||[]).filter(r=>r.severity==='Critical').length;
+  const highCnt  = (ri.risks||[]).filter(r=>r.severity==='High').length;
+  const fcStatus = (ri.delivery_forecast||{}).status || 'Insufficient data';
+  const fcBadge  = fcStatus==='On Track'?'<span class="badge bg">On Track</span>':fcStatus==='At Risk'?'<span class="badge by">At Risk</span>':fcStatus==='Delayed'?'<span class="badge br">Delayed</span>':`<span class="badge bgr">${esc(fcStatus)}</span>`;
+
+  document.getElementById('healthContent').innerHTML = `
+  <div class="card card-accent">
+    <div class="card-title">🏥 Project Health Score</div>
+    <div class="health-grid">
+      <div>
+        <div class="health-num" style="color:${scoreColor}">${score}<span style="font-size:1.2rem;color:var(--muted)">/100</span></div>
+        <div class="health-grade" style="background:${gradeBg};color:${scoreColor}">Grade ${grade}</div>
+        <p style="margin-top:.7rem;font-size:.84rem;color:var(--muted)">${esc(hs.summary||'')}</p>
+        <div style="margin-top:1rem">${bars}</div>
+      </div>
+      <div style="display:flex;justify-content:center;align-items:center">${radar}</div>
+    </div>
+  </div>
+  <div class="insight-grid">
+    <div class="insight-block">
+      <div class="insight-label">📋 Scope</div>
+      <div class="count-row">
+        <div class="count-chip cc-blue"><div class="count-num">${goalCnt}</div><div class="count-lbl">Goals</div></div>
+        <div class="count-chip cc-blue"><div class="count-num">${delCnt}</div><div class="count-lbl">Deliverables</div></div>
+      </div>
+    </div>
+    <div class="insight-block">
+      <div class="insight-label">🚧 Blockers & Actions</div>
+      <div class="count-row">
+        <div class="count-chip cc-red"><div class="count-num">${openBlk}</div><div class="count-lbl">Open Blockers</div></div>
+        <div class="count-chip cc-gray"><div class="count-num">${actCnt}</div><div class="count-lbl">Action Items</div></div>
+      </div>
+    </div>
+    <div class="insight-block">
+      <div class="insight-label">⚠ Risks</div>
+      <div class="count-row">
+        <div class="count-chip cc-red"><div class="count-num">${critCnt}</div><div class="count-lbl">Critical</div></div>
+        <div class="count-chip cc-warn"><div class="count-num">${highCnt}</div><div class="count-lbl">High</div></div>
+        <div class="count-chip cc-gray"><div class="count-num">${riskCnt}</div><div class="count-lbl">Total</div></div>
+      </div>
+    </div>
+    <div class="insight-block">
+      <div class="insight-label">📅 Forecast</div>
+      <div style="margin-top:.4rem">${fcBadge}</div>
+    </div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════════════════
+// GENERATED DOCS SECTION
+// ══════════════════════════════════════════════════════
+function renderDocsSection(docs) {
+  let html = '';
+  if (docs.user_stories && docs.user_stories.length) {
+    html += '<div class="card"><div class="card-title">📖 User Stories</div><table><thead><tr><th>ID</th><th>Role</th><th>Want</th><th>Benefit</th></tr></thead><tbody>';
+    docs.user_stories.forEach(u => { html += `<tr><td><code>${esc(u.id||'')}</code></td><td>${esc(u.role||'')}</td><td>${esc(u.want||'')}</td><td style="font-size:.8rem">${esc(u.benefit||'')}</td></tr>`; });
+    html += '</tbody></table></div>';
+  }
+  if (docs.risk_register && docs.risk_register.length) {
+    html += '<div class="card"><div class="card-title">📋 Risk Register</div><table><thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Impact</th><th>Mitigation</th></tr></thead><tbody>';
+    docs.risk_register.forEach(r => {
+      html += `<tr><td><code>${esc(r.risk_id||'')}</code></td><td><strong>${esc(r.title||'')}</strong></td>
+        <td><span class="badge ${r.severity==='Critical'||r.severity==='High'?'br':r.severity==='Medium'?'by':'bgr'}">${esc(r.severity||'')}</span></td>
+        <td style="font-size:.8rem">${esc(r.impact||'—')}</td><td style="font-size:.8rem">${esc(r.mitigation||'—')}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  if (docs.action_item_list && docs.action_item_list.length) {
+    html += '<div class="card"><div class="card-title">✅ Action Items</div><table><thead><tr><th>ID</th><th>Description</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+    docs.action_item_list.forEach(a => {
+      html += `<tr><td><code>${esc(a.action_id||'')}</code></td><td>${esc(a.description||'')}</td><td>${esc(a.owner||'—')}</td><td>${esc(a.due_date||'—')}</td>
+        <td><span class="badge ${a.priority==='High'?'br':'bgr'}">${esc(a.priority||'')}</span></td><td>${esc(a.status||'')}</td></tr>`;
+    });
+    html += '</tbody></table></div>';
+  }
+  if (!html) html = '<div class="empty"><div class="ei">📄</div><p>Run analysis to generate documentation.</p></div>';
+  document.getElementById('docsContent').innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════
+// CHATBOT
+// ══════════════════════════════════════════════════════
+const chatMsgs  = document.getElementById('chatMsgs');
+const chatInput = document.getElementById('chatInput');
+
+function sendSug(text) { chatInput.value = text; sendChat(); }
+
+function sendChat() {
+  const q = chatInput.value.trim();
+  if (!q) return;
+  if (!projectId) { alert('Upload documents first.'); switchTo('upload'); return; }
+  addMsg(q, 'user');
+  chatInput.value = '';
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  const tid = 'typing-' + Date.now();
+  chatMsgs.innerHTML += `<div class="typing" id="${tid}"><div class="dots"><span></span><span></span><span></span></div></div>`;
+  chatMsgs.scrollTop = chatMsgs.scrollHeight;
+
+  const fd = new FormData();
+  fd.append('project_id', projectId);
+  fd.append('question', q);
+  fetch('/ask', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(d => {
+      document.getElementById(tid)?.remove();
+      if (d.error) {
+        addMsg('⚠ ' + d.error, 'bot');
+      } else {
+        const cc = d.confidence==='High'?'#d1fae5':d.confidence==='Medium'?'#fef3c7':'#fee2e2';
+        const ct = d.confidence==='High'?'#065f46':d.confidence==='Medium'?'#92400e':'#991b1b';
+        let srcs = '';
+        if (d.sources && d.sources.length) { srcs = d.sources.map(s=>`<span class="msg-src">📄 ${esc(s.source)}</span>`).join(' '); }
+        const html = `${esc(d.answer)}<div class="msg-meta"><span class="msg-conf" style="background:${cc};color:${ct}">${d.confidence||'Low'} confidence</span>${srcs}</div>`;
+        addMsgHtml(html, 'bot');
+      }
+      chatMsgs.scrollTop = chatMsgs.scrollHeight;
+    })
+    .catch(err => {
+      document.getElementById(tid)?.remove();
+      addMsg('Network error: ' + err.message, 'bot');
+    });
+  document.getElementById('chatBtn').disabled = false;
+}
+
+function addMsg(text, role) {
+  chatMsgs.innerHTML += `<div class="msg ${role}">${esc(text)}</div>`;
+}
+function addMsgHtml(html, role) {
+  const d = document.createElement('div');
+  d.className = 'msg ' + role;
+  d.innerHTML = html;
+  chatMsgs.appendChild(d);
+}
+
+// ══════════════════════════════════════════════════════
+// PDF REPORT
+// ══════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════
+// REPORT — inline view + PDF download
+// ══════════════════════════════════════════════════════
+function showReportInline() {
+  if (!currentReport) { alert('Run analysis first to generate the report.'); return; }
+  const r = currentReport;
+  const hs = r.health_score || {};
+  const sc = r.scope || {};
+  const bl = r.blockers || {};
+  const ri = r.risks || {};
+  const docs = r.docs || {};
+  const pname = projectId.replace(/-/g,' ');
+  let h = '<div style="border:1px solid var(--border);border-radius:8px;padding:1.5rem;background:#0d232c">';
+
+  // Title
+  h += `<div style="text-align:center;margin-bottom:1.5rem">
+    <h2 style="color:var(--primary);font-size:1.4rem">Project Intelligence Report</h2>
+    <p style="color:var(--muted);font-size:.85rem">${esc(pname)} · ${esc(r.generated_at||'')}</p></div>`;
+
+  // 1. Overview
+  h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">1. Project Overview</h3>';
+  h += `<p style="font-size:.84rem;margin-bottom:.3rem"><strong>Project:</strong> ${esc(pname)}</p>`;
+  h += `<p style="font-size:.84rem;margin-bottom:.3rem"><strong>Status:</strong> ${esc(r.status||'unknown')}</p>`;
+  h += `<p style="font-size:.84rem;margin-bottom:.3rem"><strong>Duration:</strong> ${r.duration_seconds||0}s</p>`;
+
+  // 2. Objectives
+  if (sc.project_goals && sc.project_goals.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">2. Project Objectives</h3><ul style="padding-left:1.2rem;margin-bottom:.5rem">';
+    sc.project_goals.forEach(g => { h += `<li style="font-size:.84rem;margin-bottom:.2rem">${esc(g.goal||'')}</li>`; });
+    h += '</ul>';
+  }
+
+  // 3. Scope & Deliverables
+  if (sc.scope && sc.scope.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">3. In-Scope Items</h3><ul style="padding-left:1.2rem">';
+    sc.scope.forEach(s => { h += `<li style="font-size:.84rem;margin-bottom:.2rem">${esc(s.item||'')}</li>`; });
+    h += '</ul>';
+  }
+  if (sc.out_of_scope && sc.out_of_scope.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">Out-of-Scope</h3><ul style="padding-left:1.2rem">';
+    sc.out_of_scope.forEach(s => { h += `<li style="font-size:.84rem;margin-bottom:.2rem">${esc(s.item||'')}</li>`; });
+    h += '</ul>';
+  }
+  if (sc.deliverables && sc.deliverables.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">Deliverables</h3><table style="font-size:.8rem"><thead><tr><th>Name</th><th>Owner</th><th>Deadline</th></tr></thead><tbody>';
+    sc.deliverables.forEach(d => { h += `<tr><td><strong>${esc(d.name||'')}</strong></td><td>${esc(d.owner||'—')}</td><td>${esc(d.deadline||'—')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+
+  // 4. Milestones
+  if (sc.milestones && sc.milestones.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">4. Milestones</h3><table style="font-size:.8rem"><thead><tr><th>Name</th><th>Date</th></tr></thead><tbody>';
+    sc.milestones.forEach(m => { h += `<tr><td><strong>${esc(m.name||'')}</strong></td><td>${esc(m.date||'—')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+
+  // 5. Risk Register
+  if (ri.risks && ri.risks.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">5. Risk Register</h3><table style="font-size:.8rem"><thead><tr><th>ID</th><th>Title</th><th>Severity</th><th>Status</th><th>Mitigation</th></tr></thead><tbody>';
+    ri.risks.forEach(r2 => { h += `<tr><td><code>${esc(r2.risk_id||'')}</code></td><td>${esc(r2.title||'')}</td><td>${esc(r2.severity||'')}</td><td>${esc(r2.status||'')}</td><td style="font-size:.78rem">${esc(r2.mitigation||'—')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+
+  // 6. Blockers & Actions
+  if (bl.blockers && bl.blockers.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">6. Blockers</h3><table style="font-size:.8rem"><thead><tr><th>ID</th><th>Description</th><th>Status</th><th>Owner</th></tr></thead><tbody>';
+    bl.blockers.forEach(b => { h += `<tr><td><code>${esc(b.blocker_id||'')}</code></td><td>${esc(b.description||'')}</td><td>${esc(b.status||'')}</td><td>${esc(b.owner||'—')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+  if (bl.action_items && bl.action_items.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">Action Items</h3><table style="font-size:.8rem"><thead><tr><th>ID</th><th>Description</th><th>Owner</th><th>Due</th><th>Priority</th><th>Status</th></tr></thead><tbody>';
+    bl.action_items.forEach(a => { h += `<tr><td><code>${esc(a.action_id||'')}</code></td><td>${esc(a.description||'')}</td><td>${esc(a.owner||'—')}</td><td>${esc(a.due_date||'—')}</td><td>${esc(a.priority||'')}</td><td>${esc(a.status||'')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+
+  // 7. Timeline & Forecast
+  const fc = ri.delivery_forecast || {};
+  if (fc.status) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">7. Timeline & Delivery Forecast</h3>';
+    h += `<p style="font-size:.84rem"><strong>Status:</strong> ${esc(fc.status)}</p>`;
+    if (fc.estimated_completion_date) h += `<p style="font-size:.84rem"><strong>Completion:</strong> ${esc(fc.estimated_completion_date)}</p>`;
+    if (fc.confidence) h += `<p style="font-size:.84rem"><strong>Confidence:</strong> ${esc(fc.confidence)}</p>`;
+  }
+
+  // 8. Health Score
+  if (hs.overall !== undefined) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">8. Project Health Score</h3>';
+    h += `<p style="font-size:.84rem"><strong>Overall:</strong> ${hs.overall}/100 (Grade ${hs.grade||'F'})</p>`;
+    if (hs.summary) h += `<p style="font-size:.84rem;color:var(--muted)">${esc(hs.summary)}</p>`;
+    if (hs.dimensions && hs.dimensions.length) {
+      h += '<table style="font-size:.8rem;margin-top:.4rem"><thead><tr><th>Dimension</th><th>Score</th><th>Weight</th></tr></thead><tbody>';
+      hs.dimensions.forEach(d => { h += `<tr><td>${esc(d.name||'')}</td><td>${d.score||0}/100</td><td>${Math.round((d.weight||0)*100)}%</td></tr>`; });
+      h += '</tbody></table>';
+    }
+  }
+
+  // 9. Missing Information
+  if (r.warnings && r.warnings.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">9. Missing Information</h3><ul style="padding-left:1.2rem">';
+    r.warnings.forEach(w => { h += `<li style="font-size:.82rem;margin-bottom:.2rem">${esc(w)}</li>`; });
+    h += '</ul>';
+  }
+
+  // 10. User Stories
+  if (docs.user_stories && docs.user_stories.length) {
+    h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">10. Generated User Stories</h3><table style="font-size:.8rem"><thead><tr><th>ID</th><th>Role</th><th>Want</th><th>Benefit</th></tr></thead><tbody>';
+    docs.user_stories.forEach(u => { h += `<tr><td><code>${esc(u.id||'')}</code></td><td>${esc(u.role||'')}</td><td>${esc(u.want||'')}</td><td style="font-size:.78rem">${esc(u.benefit||'')}</td></tr>`; });
+    h += '</tbody></table>';
+  }
+
+  // 11. Conclusion
+  h += '<h3 style="color:var(--primary);margin:1rem 0 .4rem;font-size:1rem">11. Conclusion</h3>';
+  const overall = hs.overall || 0;
+  if (overall >= 80) h += '<p style="font-size:.84rem">The project is in good health with well-documented scope, manageable risks, and few blockers.</p>';
+  else if (overall >= 60) h += '<p style="font-size:.84rem">The project has moderate concerns. Some scope items, risks, or blockers need attention.</p>';
+  else if (overall >= 40) h += '<p style="font-size:.84rem">The project is at risk. Several issues need immediate attention.</p>';
+  else h += '<p style="font-size:.84rem">The project is in critical condition. Immediate action is required on multiple fronts.</p>';
+
+  h += '</div>';
+  const el = document.getElementById('reportInline');
+  el.innerHTML = h;
+  el.style.display = 'block';
+}
+
+function generatePDF() {
+  if (!projectId) { alert('Upload documents and run analysis first.'); switchTo('upload'); return; }
+  const status = document.getElementById('reportStatus');
+  const btn    = document.getElementById('pdfBtn');
+  status.innerHTML = '<div class="flash info">⏳ Generating PDF…</div>';
+  btn.disabled = true;
+  fetch(`/report/pdf?project_id=${encodeURIComponent(projectId)}`)
+    .then(r => {
+      if (!r.ok) return r.json().then(j => { throw new Error(j.error || 'Failed'); });
+      return r.blob();
+    })
+    .then(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `report_${projectId}.pdf`;
+      document.body.appendChild(a); a.click();
+      document.body.removeChild(a); URL.revokeObjectURL(url);
+      status.innerHTML = '<div class="flash ok">✓ PDF downloaded successfully.</div>';
+      btn.disabled = false;
+    })
+    .catch(err => {
+      status.innerHTML = `<div class="flash err">⚠ ${esc(err.message)}</div>`;
+      btn.disabled = false;
+    });
+}
+
+// ══════════════════════════════════════════════════════
+// HELPERS
+// ══════════════════════════════════════════════════════
+function showOverlay(title, msg) {
+  document.getElementById('ovTitle').textContent = title;
+  document.getElementById('ovMsg').textContent   = msg;
+  document.getElementById('overlay').classList.add('show');
+}
+function hideOverlay() { document.getElementById('overlay').classList.remove('show'); }
+function esc(s) { const d=document.createElement('div');d.textContent=String(s||'');return d.innerHTML; }
+function fmtSz(b) { if(b<1024) return b+' B'; if(b<1048576) return (b/1024).toFixed(1)+' KB'; return (b/1048576).toFixed(1)+' MB'; }
+
+// ══════════════════════════════════════════════════════
+// INIT — page starts clean, no pre-loaded data
+// ══════════════════════════════════════════════════════
+// Only pre-fill the project name field if we have one — do NOT
+// show badge, load KB, or load saved report until user uploads
+if (preFilledId && preFilledId.trim()) {
+  document.getElementById('project_id').value = preFilledId;
+}
+renderStaged();
+</script>
+</body>
+</html>
