@@ -34,7 +34,7 @@ Built as part of the Infosys Springboard Internship programme (Milestones 1–4)
 
 ```bash
 git clone <repo-url>
-cd "Infosys project"
+cd <repo-folder>
 
 # Create and activate a virtual environment
 python -m venv venv
@@ -64,61 +64,41 @@ Open `http://localhost:5000/app` in your browser.
 
 ---
 
-## Project Structure
+## Files
 
-```
-Infosys project/
-├── app.py                  # Flask routes and application entry point
-├── ingestion.py            # Document loaders (PDF, DOCX, CSV, TXT/MD)
-├── rag.py                  # ChromaDB vector store: index, search, get_all_text
-├── models.py               # Dataclass models (Document, Chunk, SearchResult)
-├── report_store.py         # Persist and load analysis reports to/from disk
-├── requirements.txt         # Pinned dependencies
-├── run_tests.py            # Test runner
-├── run_full_tests.py       # Full test suite runner
-│
-├── agents/
-│   ├── combined_agent.py   # Two parallel LLM calls → scope + blockers/risks
-│   ├── scope_agent.py      # Scope extraction (standalone, used by tests)
-│   ├── blocker_agent.py    # Blocker extraction (standalone, used by tests)
-│   ├── risk_agent.py       # Risk detection & forecast (standalone, used by tests)
-│   ├── doc_agent.py        # Deterministic doc generation (no LLM)
-│   ├── health_score.py     # 0–100 health score computation
-│   ├── orchestrator.py     # Runs all agents, assembles final report
-│   ├── qa_agent.py         # Conversational Q&A (RAG + LLM + analysis context)
-│   ├── llm_client.py       # Groq API wrapper with retry, disk cache, TPM budget
-│   └── __init__.py
-│
-├── templates/
-│   ├── app_v2.html         # Single-page app (dark theme, sidebar, all sections)
-│   ├── base.html           # Layout shell for legacy pages
-│   ├── analysis.html       # Standalone analysis report (legacy)
-│   ├── upload.html         # Standalone upload page (legacy)
-│   ├── upload_result.html  # Upload results page (legacy)
-│   ├── knowledge_base.html # Browse indexed documents (legacy)
-│   ├── search.html         # Semantic search interface (legacy)
-│   └── qa.html             # Conversational Q&A chat (legacy)
-│
-├── tests/
-│   ├── conftest.py             # Pre-warm embedding model for all tests
-│   ├── test_agents.py          # Unit tests: all agents, LLM client, orchestrator
-│   ├── test_integration.py     # Integration: ingest → index → orchestrator (mocked LLM)
-│   ├── test_milestone3.py      # Health score, doc agent, Q&A agent, partial status
-│   ├── test_milestone4.py      # PDF/DOCX ingestion, mixed pipeline, report persistence
-│   ├── test_regression.py      # Forecast fallback, context starvation, /ask route
-│   ├── test_extraction_accuracy.py  # _merge() normalisation regressions
-│   ├── test_llm_reliability.py      # Retry, cache, rate-limit handling
-│   ├── test_blocker_fix.py          # Blocker agent edge cases
-│   └── sample_data/            # Fixture files for integration tests
-│
-├── docs/
-│   └── ARCHITECTURE.md         # Technical architecture documentation
-│
-├── uploads/                # Uploaded files (auto-created, gitignored)
-├── chroma_db/              # ChromaDB vector store (auto-created, gitignored)
-├── llm_cache/              # LLM result cache on disk (auto-created, gitignored)
-└── reports/                # Persisted analysis reports (auto-created, gitignored)
-```
+| File | Description |
+|---|---|
+| `app.py` | Flask routes and application entry point |
+| `ingestion.py` | Document loaders (PDF, DOCX, CSV, TXT/MD) |
+| `rag.py` | ChromaDB vector store: index, search, get_all_text |
+| `models.py` | Dataclass models (Document, Chunk, SearchResult) |
+| `report_store.py` | Persist and load analysis reports to/from disk |
+| `requirements.txt` | Pinned dependencies |
+| `run_tests.py` | Test runner |
+| `run_full_tests.py` | Full test suite runner |
+| `app.html` | Single-page app UI (dark theme, sidebar, all sections) |
+| `ARCHITECTURE.md` | Technical architecture documentation |
+| `LICENSE` | License file |
+| `.env` | API key and model configuration |
+| `__init__.py` | Agents package init |
+| `combined_agent.py` | Two parallel LLM calls → scope + blockers/risks |
+| `scope_agent.py` | Scope extraction (standalone) |
+| `blocker_agent.py` | Blocker extraction (standalone) |
+| `risk_agent.py` | Risk detection & forecast (standalone) |
+| `doc_agent.py` | Deterministic doc generation (no LLM) |
+| `health_score.py` | 0–100 health score computation |
+| `orchestrator.py` | Runs all agents, assembles final report |
+| `qa_agent.py` | Conversational Q&A (RAG + LLM + analysis context) |
+| `llm_client.py` | Groq API wrapper with retry, disk cache, TPM budget |
+| `conftest.py` | Pytest configuration |
+| `test_agents.py` | Unit tests: all agents, LLM client, orchestrator |
+| `test_integration.py` | Integration: ingest → index → orchestrator (mocked LLM) |
+| `test_milestone3.py` | Health score, doc agent, Q&A agent, partial status |
+| `test_milestone4.py` | PDF/DOCX ingestion, mixed pipeline, report persistence |
+| `test_regression.py` | Forecast fallback, context starvation, /ask route |
+| `test_extraction_accuracy.py` | _merge() normalisation regressions |
+| `test_llm_reliability.py` | Retry, cache, rate-limit handling |
+| `test_blocker_fix.py` | Blocker agent edge cases |
 
 ---
 
@@ -140,7 +120,7 @@ To add more documents to an existing project later, use the same project name. T
 1. Navigate to **Project Analysis** in the sidebar
 2. Click **Run Analysis**
 
-The analysis runs **two LLM calls in parallel** (scope + blockers/risks) using a ThreadPoolExecutor. On the first run it takes ~8 seconds. Results are cached to disk (`llm_cache/`), so subsequent runs (even after Flask restart) return instantly in ~1 second.
+The analysis runs **two LLM calls in parallel** (scope + blockers/risks) using a ThreadPoolExecutor. On the first run it takes ~8 seconds. Results are cached to disk, so subsequent runs (even after Flask restart) return instantly in ~1 second.
 
 It produces:
 
@@ -164,10 +144,10 @@ The **Report** section lets you view the full report inline and download it as a
 
 ```bash
 # Full test suite
-venv\Scripts\python.exe -m pytest tests/ -v
+python -m pytest tests/ -v
 
 # Or use the runner script
-venv\Scripts\python.exe run_full_tests.py
+python run_full_tests.py
 ```
 
 The test suite uses mocked LLM calls throughout — no Groq API key is needed to run tests. 255 tests pass, 5 skipped.
@@ -225,7 +205,7 @@ The combined agent makes **two LLM calls concurrently** via `ThreadPoolExecutor(
 - Call 1: Scope extraction (goals, deliverables, milestones, out-of-scope)
 - Call 2: Blockers + Risks extraction (blockers, actions, decisions, risks, forecast)
 
-For projects under 50K characters, the **full document text** is passed directly to both calls (bypassing vector search entirely), so no section or table row is missed. Results are cached to disk at `llm_cache/<project_id>.json` with a 24-hour TTL. Subsequent analysis runs — even after Flask restart — read from the disk cache in ~1 second with zero API calls.
+For projects under 50K characters, the **full document text** is passed directly to both calls (bypassing vector search entirely), so no section or table row is missed. Results are cached to disk with a 24-hour TTL. Subsequent analysis runs — even after Flask restart — read from the disk cache in ~1 second with zero API calls.
 
 ### Rule-Based Delivery Forecast
 The orchestrator always runs a deterministic rule-based forecast from extracted milestone/deliverable dates and merges it with the LLM's qualitative assessment:
@@ -244,3 +224,5 @@ The timeline risk score cross-checks confirmed Critical/High risks against the f
 
 ### GPT-OSS Reasoning Control
 `reasoning_effort="low"` is injected via `extra_body` for GPT-OSS models in `llm_client.py` to limit internal reasoning tokens. This keeps the model fast (~8 seconds per analysis) while maintaining output quality.
+
+See `ARCHITECTURE.md` for detailed technical documentation.
